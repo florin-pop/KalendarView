@@ -12,7 +12,7 @@ struct ViewFrame: Equatable {
 
     /// A given identifier for the View to faciliate processing
     /// of frame updates
-    let viewId : String
+    let viewId: String
 
     /// An `Anchor` representation of the View
     let frameAnchor: Anchor<CGRect>
@@ -41,13 +41,13 @@ struct FramePreferenceKey: PreferenceKey {
 
 /// Adds an Anchor preference to notify of frame changes
 struct ProvideFrameChanges: ViewModifier {
-    var viewId : String
+    var viewId: String
 
     func body(content: Content) -> some View {
         content
             .transformAnchorPreference(key: FramePreferenceKey.self, value: .bounds) {
                 $0.append(ViewFrame(viewId: self.viewId, frameAnchor: $1))
-            }
+        }
     }
 }
 
@@ -55,12 +55,12 @@ extension View {
 
     /// Adds an Anchor preference to notify of frame changes
     /// - Parameter viewId: A `String` identifying the View
-    func provideFrameChanges(viewId : String) -> some View {
+    func provideFrameChanges(viewId: String) -> some View {
         ModifiedContent(content: self, modifier: ProvideFrameChanges(viewId: viewId))
     }
 }
 
-typealias ViewTreeFrameChanges = [String : CGRect]
+typealias ViewTreeFrameChanges = [String: CGRect]
 
 /// Provides a block to handle internal View tree frame changes
 /// for views using the `ProvideFrameChanges` in own coordinate space.
@@ -68,18 +68,18 @@ struct HandleViewTreeFrameChanges: ViewModifier {
     /// The handler to process Frame changes on this views subtree.
     /// `ViewTreeFrameChanges` is a dictionary where keys are string view ids
     /// and values are the updated view frame (`CGRect`)
-    var handler : (ViewTreeFrameChanges)->Void
+    var handler: (ViewTreeFrameChanges) -> Void
 
     func body(content: Content) -> some View {
         GeometryReader { contentGeometry in
             content
                 .onPreferenceChange(FramePreferenceKey.self) {
                     self._updateViewTreeLayoutChanges($0, in: contentGeometry)
-                }
+            }
         }
     }
 
-    private func _updateViewTreeLayoutChanges(_ changes : [ViewFrame], in geometry : GeometryProxy) {
+    private func _updateViewTreeLayoutChanges(_ changes: [ViewFrame], in geometry: GeometryProxy) {
         let pairs = changes.map({ ($0.viewId, geometry[$0.frameAnchor]) })
         handler(Dictionary(uniqueKeysWithValues: pairs))
     }
@@ -88,7 +88,7 @@ struct HandleViewTreeFrameChanges: ViewModifier {
 extension View {
     /// Adds an Anchor preference to notify of frame changes
     /// - Parameter viewId: A `String` identifying the View
-    func handleViewTreeFrameChanges(_ handler : @escaping (ViewTreeFrameChanges)->Void) -> some View {
+    func handleViewTreeFrameChanges(_ handler : @escaping (ViewTreeFrameChanges) -> Void) -> some View {
         ModifiedContent(content: self, modifier: HandleViewTreeFrameChanges(handler: handler))
     }
 }

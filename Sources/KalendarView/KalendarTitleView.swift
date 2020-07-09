@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct KalendarTitleView : View {
+struct KalendarTitleView: View {
     @Binding var title: String
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             Text(title).padding()
@@ -27,7 +27,7 @@ struct KalendarTitleView : View {
 }
 
 #if DEBUG
-struct KalendarTitleView_Previews : PreviewProvider {
+struct KalendarTitleView_Previews: PreviewProvider {
     static var previews: some View {
         KalendarTitleView(title: .constant("May 2020"))
     }

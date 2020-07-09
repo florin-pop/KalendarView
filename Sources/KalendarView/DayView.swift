@@ -9,15 +9,15 @@ import SwiftUI
 
 struct DayView: View {
     let date: Date
-    
+
     var textColor: Color {
         self.date.isToday() ? .todayForeground : .textForeground
     }
-    
+
     var backgroundColor: Color {
         self.date.isToday() ?  .todayBackground : .textBackground
     }
-    
+
     var body: some View {
         Text(date.formatDayOfMonth())
             .foregroundColor(textColor)
@@ -30,7 +30,7 @@ struct DayView: View {
 }
 
 #if DEBUG
-struct DayView_Previews : PreviewProvider {
+struct DayView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             DayView(date: Date().addingTimeInterval(60*60*24*365))

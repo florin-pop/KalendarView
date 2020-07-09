@@ -7,6 +7,8 @@
 
 import Foundation
 
-class KalendarSelection : ObservableObject {
-    @Published var date: Date! = nil
+public class KalendarSelection: ObservableObject {
+    @Published public var date: Date! = nil
+
+    public init() {}
 }

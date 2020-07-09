@@ -10,6 +10,6 @@ final class KalendarViewTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testExample", testExample)
     ]
 }
