@@ -10,19 +10,19 @@ import SwiftUI
 public struct KalendarView<Accessory: View>: View {
     @State private var title: String = ""
     @State private var scrollOffset: CGPoint = .zero
-    
+
     let fromDate: Date
     let toDate: Date
     let scrollToBottom: Bool
     let accessoryBuilder: (_ date: Date) -> Accessory
-    
+
     var selection: KalendarSelection
-    
+
     private var months: [Date] {
         let months = (0 ... fromDate.months(to: toDate)).map { self.fromDate.dateByAdding(months: $0) }
         return months
     }
-    
+
     public init(fromDate: Date, toDate: Date, scrollToBottom: Bool = false, selection: KalendarSelection, @ViewBuilder accessoryBuilder: @escaping (_ date: Date) -> Accessory) {
         self.fromDate = fromDate
         self.toDate = toDate
@@ -30,7 +30,7 @@ public struct KalendarView<Accessory: View>: View {
         self.selection = selection
         self.accessoryBuilder = accessoryBuilder
     }
-    
+
     public var body: some View {
         Group {
             KalendarTitleView(title: self.$title)
@@ -48,7 +48,6 @@ public struct KalendarView<Accessory: View>: View {
                             })
                             .onPreferenceChange(ViewOffsetKey.self) { offsetY in
                                 if offsetY > 0 {
-                                    print("\(month) offset >> \(offsetY)")
                                     let currentMonth = month.formatMonthAndYear()
                                     if title != currentMonth {
                                         title = currentMonth
@@ -64,23 +63,6 @@ public struct KalendarView<Accessory: View>: View {
             }.coordinateSpace(name: "scroll")
         }
     }
-    
-    //    private func onScroll(_ viewTreeChanges: ViewTreeFrameChanges) {
-    //        var minY: CGFloat = .infinity
-    //        var currentMonth = ""
-    //
-    //        for (month, frame) in viewTreeChanges {
-    //            if frame.minY >= -frame.height / 2, // bottom half of the month is visible
-    //               frame.minY <= minY
-    //            { // topmost month
-    //                minY = frame.minY
-    //                currentMonth = month
-    //            }
-    //        }
-//            if title != currentMonth {
-//                title = currentMonth
-//            }
-    //    }
 }
 
 extension KalendarView where Accessory == EmptyView {
@@ -91,7 +73,7 @@ extension KalendarView where Accessory == EmptyView {
         self.selection = selection
         self.accessoryBuilder = { _ in EmptyView() }
     }
-    
+
     func buildContent<Accessory: View>(@ViewBuilder content: () -> Accessory) -> KalendarView<EmptyView> {
         KalendarView<EmptyView>(fromDate: fromDate, toDate: toDate, selection: selection) { _ in
             EmptyView()

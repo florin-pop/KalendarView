@@ -1,6 +1,6 @@
 //
 //  DayView.swift
-//  
+//
 //
 //  Created by Florin Pop on 08.07.20.
 //
@@ -15,7 +15,7 @@ struct DayView: View {
     }
 
     var backgroundColor: Color {
-        self.date.isToday() ?  .todayBackground : .textBackground
+        self.date.isToday() ? .todayBackground : .textBackground
     }
 
     var body: some View {

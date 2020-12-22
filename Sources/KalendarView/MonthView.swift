@@ -1,6 +1,6 @@
 //
 //  MonthView.swift
-//  
+//
 //
 //  Created by Florin Pop on 07.07.20.
 //
@@ -69,7 +69,7 @@ extension MonthView where Accessory == EmptyView {
     }
 
     func buildContent<Accessory: View>(@ViewBuilder content: () -> Accessory) -> MonthView<EmptyView> {
-        MonthView<EmptyView>(month: month, selection: selection) { _ in
+        MonthView<EmptyView>(month: self.month, selection: self.selection) { _ in
             EmptyView()
         }
     }
