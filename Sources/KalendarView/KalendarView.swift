@@ -1,6 +1,6 @@
 //
 //  KalendarView.swift
-//  
+//
 //
 //  Created by Florin Pop on 07.07.20.
 //
@@ -10,26 +10,19 @@ import SwiftUI
 public struct KalendarView<Accessory: View>: View {
     @State private var title: String = ""
     @State private var scrollOffset: CGPoint = .zero
-
+    
     let fromDate: Date
     let toDate: Date
     let scrollToBottom: Bool
     let accessoryBuilder: (_ date: Date) -> Accessory
-
+    
     var selection: KalendarSelection
-
-    private var rotationEffectAngle: Angle {
-        self.scrollToBottom ? .pi : .zero
-    }
-    private var scaleEffectX: CGFloat {
-        self.scrollToBottom ? -1 : 1
-    }
-
+    
     private var months: [Date] {
-        let months = (0...fromDate.months(to: toDate)).map { self.fromDate.dateByAdding(months: $0) }
-        return scrollToBottom ? months.reversed() : months
+        let months = (0 ... fromDate.months(to: toDate)).map { self.fromDate.dateByAdding(months: $0) }
+        return months
     }
-
+    
     public init(fromDate: Date, toDate: Date, scrollToBottom: Bool = false, selection: KalendarSelection, @ViewBuilder accessoryBuilder: @escaping (_ date: Date) -> Accessory) {
         self.fromDate = fromDate
         self.toDate = toDate
@@ -37,45 +30,57 @@ public struct KalendarView<Accessory: View>: View {
         self.selection = selection
         self.accessoryBuilder = accessoryBuilder
     }
-
+    
     public var body: some View {
         Group {
             KalendarTitleView(title: self.$title)
             Divider()
             ScrollView {
-                VStack {
-                    ForEach(self.months, id: \.self) { month in
-                        VStack {
-                            MonthView(month: month, selection: self.selection, accessoryBuilder: self.accessoryBuilder)
+                ScrollViewReader { scrollViewProxy in
+                    LazyVStack {
+                        ForEach(self.months, id: \.self) { month in
+                            VStack {
+                                MonthView(month: month, selection: self.selection, accessoryBuilder: self.accessoryBuilder)
+                            }
+                            .background(GeometryReader {
+                                Color.clear.preference(key: ViewOffsetKey.self,
+                                                       value: -$0.frame(in: .named("scroll")).origin.y + $0.size.height / 2)
+                            })
+                            .onPreferenceChange(ViewOffsetKey.self) { offsetY in
+                                if offsetY > 0 {
+                                    print("\(month) offset >> \(offsetY)")
+                                    let currentMonth = month.formatMonthAndYear()
+                                    if title != currentMonth {
+                                        title = currentMonth
+                                    }
+                                }
+                            }
                         }
-                        .provideFrameChanges(viewId: month.formatMonthAndYear())
+                    }.onAppear {
+                        guard let lastMonth = self.months.last, self.scrollToBottom else { return }
+                        scrollViewProxy.scrollTo(lastMonth, anchor: .bottom)
                     }
-                        .rotationEffect(self.rotationEffectAngle) // rotate each item
-                        .scaleEffect(x: scaleEffectX, y: 1, anchor: .center) // and flip it so we can flip the container to keep the scroll indicators on the right
                 }
-
-            }
-                .rotationEffect(self.rotationEffectAngle) // rotate the whole ScrollView 180º
-                .scaleEffect(x: scaleEffectX, y: 1, anchor: .center) // flip it so the indicator is on the right
-                .handleViewTreeFrameChanges { self.onScroll($0) }
+            }.coordinateSpace(name: "scroll")
         }
     }
-
-    private func onScroll(_ viewTreeChanges: ViewTreeFrameChanges) {
-        var minY: CGFloat = .infinity
-        var currentMonth = ""
-
-        for (month, frame) in viewTreeChanges {
-            if frame.minY >= -frame.height / 2 // bottom half of the month is visible
-                && frame.minY <= minY { // topmost month
-                minY = frame.minY
-                currentMonth = month
-            }
-        }
-        if self.title != currentMonth {
-            self.title = currentMonth
-        }
-    }
+    
+    //    private func onScroll(_ viewTreeChanges: ViewTreeFrameChanges) {
+    //        var minY: CGFloat = .infinity
+    //        var currentMonth = ""
+    //
+    //        for (month, frame) in viewTreeChanges {
+    //            if frame.minY >= -frame.height / 2, // bottom half of the month is visible
+    //               frame.minY <= minY
+    //            { // topmost month
+    //                minY = frame.minY
+    //                currentMonth = month
+    //            }
+    //        }
+//            if title != currentMonth {
+//                title = currentMonth
+//            }
+    //    }
 }
 
 extension KalendarView where Accessory == EmptyView {
@@ -86,7 +91,7 @@ extension KalendarView where Accessory == EmptyView {
         self.selection = selection
         self.accessoryBuilder = { _ in EmptyView() }
     }
-
+    
     func buildContent<Accessory: View>(@ViewBuilder content: () -> Accessory) -> KalendarView<EmptyView> {
         KalendarView<EmptyView>(fromDate: fromDate, toDate: toDate, selection: selection) { _ in
             EmptyView()
@@ -94,8 +99,12 @@ extension KalendarView where Accessory == EmptyView {
     }
 }
 
-private extension Angle {
-    static let pi = Angle.degrees(180)
+private struct ViewOffsetKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue = CGFloat.zero
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value += nextValue()
+    }
 }
 
 #if DEBUG
