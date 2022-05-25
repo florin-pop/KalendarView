@@ -8,7 +8,7 @@
 import Foundation
 
 public class KalendarSelection: ObservableObject {
-    @Published public var date: Date! = nil
+    @Published public var date: Date? = nil
 
     public init() {}
 }

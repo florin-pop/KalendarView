@@ -9,7 +9,6 @@ import SwiftUI
 
 public struct KalendarView<Accessory: View>: View {
     @State private var title: String = ""
-    @State private var scrollOffset: CGPoint = .zero
 
     let fromDate: Date
     let toDate: Date
